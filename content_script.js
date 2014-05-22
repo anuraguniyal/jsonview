@@ -86,6 +86,8 @@ function convert_json_to_dynatree_data(key, data, orig_data, level){
         var value = String(data)
         var data = {'title':key+': '+value}
         process_node_by_user_code(key, value, data, orig_data, level)
+        //encode title, after user processing e.g. he may add < or newlines etc
+        data['title'] = multiLineHtmlEncode(data['title'])
         return data
     }
     var children = []
@@ -132,5 +134,33 @@ function convert_json_to_jstree_data(key, data, level){
         children.push(convert_json_to_jstree_data(ckey, data[ckey], level+1))
     }
     return tree_data
+}
+
+function multiLineHtmlEncode(value) {
+    var lines = value.split(/\r\n|\r|\n/);
+    for (var i = 0; i < lines.length; i++) {
+        lines[i] = htmlEscape(lines[i]);
+    }
+    return lines.join('<br>');
+}
+
+function htmlEncode(value){
+  //create a in-memory div, set it's inner text(which jQuery automatically encodes)
+  //then grab the encoded contents back out.  The div never exists on the page.
+  return $('<div/>').text(value).html();
+}
+
+function htmlEscape(str) {
+    return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/ /g, '&nbsp;')
+}
+
+function htmlDecode(value){
+  return $('<div/>').html(value).text();
 }
 
